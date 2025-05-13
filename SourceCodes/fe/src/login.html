@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Nhập - Bán Quần Áo</title>
+  <link rel="stylesheet" href="./css/login.css"> <!-- Đảm bảo liên kết tới file CSS -->
+</head>
+
+<body>
+  <script src="config.js"></script>
+  <header>
+    <div class="logo">Shop Quần Áo</div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Trang Chủ</a></li>
+        <li><a href="login.html">Đăng Nhập</a></li>
+        <li><a href="register.html">Đăng Ký</a></li>
+        <li><a href="cart.html">Giỏ Hàng (<span id="cart-count">0</span>)</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="login-container">
+      <h1>Đăng Nhập</h1>
+
+      <form id="login-form" class="login-form">
+        <input type="text" id="taiKhoan" placeholder="Tài khoản" required />
+        <input type="password" id="password" placeholder="Mật khẩu" required />
+        <button type="submit">Đăng Nhập</button>
+      </form>
+      <p id="error-message" style="color: red; margin-top: 10px;"></p>
+      <p>Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a></p>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const taiKhoan = document.getElementById('taiKhoan').value.trim();
+      const matKhau = document.getElementById('password').value.trim();
+      const errorMessage = document.getElementById('error-message');
+
+      try {
+        const response = await fetch(`${window.config.API_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ taiKhoan, matKhau }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Đăng nhập thất bại');
+        }
+        console.log(data);
+        if (!data.taiKhoan.user || !data.taiKhoan.token) {
+          throw new Error('Dữ liệu đăng nhập không hợp lệ');
+        }
+
+        localStorage.setItem('user', JSON.stringify(data.taiKhoan));
+        localStorage.setItem('token', data.taiKhoan.token);
+
+        if(data.taiKhoan.user.loaiTaiKhoan === "ADMIN"){
+          window.location.href = 'admin.html';
+        }else{
+          window.location.href = 'index.html';
+        }
+        
+      } catch (error) {
+        errorMessage.textContent = error.message;
+      }
+    });
+  </script>
+
+</body>
+
+</html>

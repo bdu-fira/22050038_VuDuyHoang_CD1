@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trang Chủ - Shop Quần Áo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/index.css"/>
+</head>
+
+<body>
+    <script src="config.js"></script>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo">
+                🛍️ <span>Shop Quần Áo</span>
+            </div>
+            <nav>
+                <ul class="nav-links" id="nav-links">
+                    </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div id="carouselBanner" class="carousel-container">
+            <div class="carousel-slide active">
+                <img data-src="/banner.webp" alt="Banner 1">
+            </div>
+            <div class="carousel-slide">
+                <img data-src="/banner2.webp" alt="Banner 2">
+            </div>
+            <div class="carousel-slide">
+                <img data-src="/banner3.webp" alt="Banner 3">
+            </div>
+            <div class="carousel-controls">
+                <button id="prevSlideBtn">&lt;</button>
+                <button id="nextSlideBtn">&gt;</button>
+            </div>
+        </div>
+        
+        <h1>Sản Phẩm Của Chúng Tôi</h1>
+        <div class="filter-bar">
+            <select id="categoryFilter">
+                <option value="all">Tất cả</option>
+                </select>
+
+            <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm..." />
+        </div>
+
+        <div class="product-list">
+            </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const banners = document.querySelectorAll('#carouselBanner img');
+            if (window.config?.IMG_URL) {
+                banners.forEach(img => {
+                    const fileName = img.getAttribute('data-src');
+                    img.src = `${window.config.IMG_URL}${fileName}`;
+                });
+            } else {
+                console.error('IMG_URL không được cấu hình trong window.config');
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.getElementById('nav-links');
+            const userRaw = localStorage.getItem('user');
+            let userData = null;
+            try {
+                userData = userRaw ? JSON.parse(userRaw) : null;
+            } catch (e) {
+                console.error('Lỗi parse user:', e);
+                localStorage.removeItem('user');
+            }
+
+            const cartRaw = localStorage.getItem('cart');
+            let cart = [];
+            try {
+                cart = cartRaw ? JSON.parse(cartRaw) : [];
+            } catch (e) {
+                console.error('Lỗi parse cart:', e);
+                localStorage.removeItem('cart');
+            }
+
+            const cartCount = cart.reduce((total, item) => total + item.soLuong, 0);
+
+            if (userData?.user?.khachHang?.hoTen) {
+                const hoTen = userData.user.khachHang.hoTen;
+
+                navLinks.innerHTML = `
+                    <li><a href="index.html">Trang Chủ</a></li>
+                    <li><span>👤 Xin chào, ${hoTen}</span></li>
+                    <li><a href="#" id="logout-btn">Đăng Xuất</a></li>
+                    <li><a href="cart.html">🛒 Giỏ Hàng (<span id="cart-count">${cartCount}</span>)</a></li>
+                    <li><a href="donhang.html">Đơn Hàng</a></li>
+                `;
+
+                document.getElementById('logout-btn').addEventListener('click', () => {
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('token');
+                    location.reload();
+                });
+            } else {
+                navLinks.innerHTML = `
+                    <li><a href="index.html">Trang Chủ</a></li>
+                    <li><a href="login.html">Đăng Nhập</a></li>
+                    <li><a href="register.html">Đăng Ký</a></li>
+                    <li><a href="cart.html">🛒 Giỏ Hàng (<span id="cart-count">${cartCount}</span>)</a></li>
+                `;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const carouselContainer = document.getElementById('carouselBanner');
+            const slides = document.querySelectorAll('.carousel-slide');
+            const prevButton = document.getElementById('prevSlideBtn');
+            const nextButton = document.getElementById('nextSlideBtn');
+            const totalSlides = slides.length;
+            let currentSlide = 0;
+            let intervalId;
+            const intervalTime = 3000;
+
+            function showSlide(index) {
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('active');
+                    if (i === index) {
+                        slide.classList.add('active');
+                    }
+                });
+            }
+
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                showSlide(currentSlide);
+            }
+
+            function prevSlide() {
+                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                showSlide(currentSlide);
+            }
+
+            function startCarousel() {
+                intervalId = setInterval(nextSlide, intervalTime);
+            }
+
+            function stopCarousel() {
+                clearInterval(intervalId);
+            }
+
+            // Hiển thị slide đầu tiên
+            showSlide(currentSlide);
+
+            // Bắt đầu tự động chuyển slide
+            startCarousel();
+
+            // Xử lý sự kiện click cho nút Previous
+            prevButton.addEventListener('click', () => {
+                stopCarousel();
+                prevSlide();
+                startCarousel(); // Khởi động lại tự động chuyển sau khi tương tác
+            });
+
+            // Xử lý sự kiện click cho nút Next
+            nextButton.addEventListener('click', () => {
+                stopCarousel();
+                nextSlide();
+                startCarousel(); // Khởi động lại tự động chuyển sau khi tương tác
+            });
+
+            // Tùy chọn: Dừng carousel khi di chuột vào và tiếp tục khi rời chuột
+            // carouselContainer.addEventListener('mouseenter', stopCarousel);
+            // carouselContainer.addEventListener('mouseleave', startCarousel);
+        });
+    </script>
+
+    <script type="module" src="js/index.js"></script>
+
+</body>
+
+</html>

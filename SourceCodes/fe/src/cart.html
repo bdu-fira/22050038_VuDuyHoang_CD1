@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giỏ Hàng - Bán Quần Áo</title>
+  <link rel="stylesheet" href="./css/cart.css" />
+</head>
+
+<body>
+  <script src="config.js"></script>
+  <header class="header">
+    <div class="container header-container">
+      <div class="logo">
+        🛍️ <span>Shop Quần Áo</span>
+      </div>
+      <nav>
+        <ul class="nav-links" id="nav-links"></ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="main-heading">Giỏ Hàng</h1>
+
+    <div class="cart-container">
+      <div id="cart-items"></div>
+
+      <div class="checkout-container">
+        <div id="total-price" class="cart-total">Tổng: 0 VNĐ</div>
+        <button id="checkout" class="checkout-btn">Thanh Toán</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const navLinks = document.getElementById('nav-links');
+      const userRaw = localStorage.getItem('user');
+      let userData = null;
+      try {
+        userData = userRaw ? JSON.parse(userRaw) : null;
+      } catch (e) {
+        console.error('Lỗi parse user:', e);
+        localStorage.removeItem('user');
+      }
+
+      const cartRaw = localStorage.getItem('cart');
+      let cart = [];
+      try {
+        cart = cartRaw ? JSON.parse(cartRaw) : [];
+      } catch (e) {
+        console.error('Lỗi parse cart:', e);
+        localStorage.removeItem('cart');
+      }
+
+      // Tính tổng số lượng sản phẩm trong giỏ hàng
+      const cartCount = cart.reduce((total, item) => total + (item.quantity || 0), 0);
+
+      if (userData?.user?.khachHang?.hoTen) {
+        const hoTen = userData.user.khachHang.hoTen;
+
+        navLinks.innerHTML = `
+      <li><a href="index.html">Trang Chủ</a></li>
+      <li><span>👤 Xin chào, ${hoTen}</span></li>
+      <li><a href="#" id="logout-btn">Đăng Xuất</a></li>
+      <li><a href="cart.html">🛒 Giỏ Hàng (<span id="cart-count">${cartCount}</span>)</a></li>
+      <li><a href="donhang.html">Đơn Hàng</a></li>
+    `;
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          location.reload();
+          window.location.href = 'index.html';
+        });
+      } else {
+        navLinks.innerHTML = `
+      <li><a href="index.html">Trang Chủ</a></li>
+      <li><a href="login.html">Đăng Nhập</a></li>
+      <li><a href="register.html">Đăng Ký</a></li>
+      <li><a href="cart.html">🛒 Giỏ Hàng (<span id="cart-count">${cartCount}</span>)</a></li>
+    `;
+      }
+    });
+
+  </script>
+  <script type="module" src="./js/cart.js"></script>
+</body>
+
+</html>
